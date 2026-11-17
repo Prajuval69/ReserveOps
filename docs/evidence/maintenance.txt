@@ -1,0 +1,2 @@
+2026-11-01T11:17:06.185Z pid=26868 tid=d4k INFO: Sidekiq 7.3.9 connecting to Redis with options {:size=>10, :pool_name=>"internal", :url=>"redis://127.0.0.1:56379/0"}
+Maintenance sweep queued.

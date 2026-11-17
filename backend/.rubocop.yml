@@ -1,0 +1,18 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+  Exclude:
+    - 'vendor/**/*'
+    - 'db/structure.sql'
+    - 'bin/*'
+    - 'config/environments/*'
+Metrics:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Layout/LineLength:
+  Max: 160
+Layout/EndOfLine:
+  EnforcedStyle: lf
+Style/NumberedParameters:
+  Enabled: false

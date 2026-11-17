@@ -1,0 +1,73 @@
+== 20261101000000 CreateReserveops: migrating =================================
+-- enable_extension("btree_gist")
+   -> 0.0432s
+-- create_table(:users)
+   -> 0.0053s
+-- add_index(:users, "lower(email)", {:unique=>true})
+   -> 0.0017s
+-- add_check_constraint(:users, "role IN ('employee','manager','admin')", {:name=>"valid_user_role"})
+   -> 0.0013s
+-- add_check_constraint(:users, "email = lower(email)", {:name=>"normalized_email"})
+   -> 0.0011s
+-- create_table(:locations)
+   -> 0.0033s
+-- add_index(:locations, :name, {:unique=>true})
+   -> 0.0016s
+-- create_table(:manager_location_scopes)
+   -> 0.0081s
+-- add_index(:manager_location_scopes, [:user_id, :location_id], {:unique=>true})
+   -> 0.0016s
+-- create_table(:resource_categories)
+   -> 0.0035s
+-- add_index(:resource_categories, :slug, {:unique=>true})
+   -> 0.0017s
+-- create_table(:resources)
+   -> 0.0128s
+-- add_index(:resources, [:location_id, :identifier], {:unique=>true})
+   -> 0.0016s
+-- add_check_constraint(:resources, "occupants_capacity > 0 AND min_minutes > 0 AND max_minutes >= min_minutes AND advance_days > 0", {:name=>"valid_resource_policy"})
+   -> 0.0012s
+-- add_check_constraint(:resources, "opens_at ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' AND closes_at ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' AND opens_at < closes_at", {:name=>"valid_opening_hours"})
+   -> 0.0014s
+-- create_table(:resource_blackouts)
+   -> 0.0048s
+-- add_check_constraint(:resource_blackouts, "ends_at > starts_at", {:name=>"positive_blackout"})
+   -> 0.0014s
+-- create_table(:bookings)
+   -> 0.0092s
+-- add_check_constraint(:bookings, "ends_at > starts_at", {:name=>"positive_booking_interval"})
+   -> 0.0015s
+-- add_check_constraint(:bookings, "attendee_count >= 1", {:name=>"positive_attendee_count"})
+   -> 0.0014s
+-- add_check_constraint(:bookings, "status IN ('pending_approval','confirmed','waitlisted','rejected','cancelled','expired','completed')", {:name=>"valid_booking_status"})
+   -> 0.0013s
+-- add_check_constraint(:bookings, "status != 'pending_approval' OR (approval_expires_at IS NOT NULL AND approval_expires_at <= starts_at)", {:name=>"valid_hold_deadline"})
+   -> 0.0015s
+-- add_index(:bookings, [:resource_id, :starts_at, :ends_at])
+   -> 0.0017s
+-- add_index(:bookings, [:user_id, :created_at])
+   -> 0.0017s
+-- add_index(:bookings, [:status, :approval_expires_at])
+   -> 0.0015s
+-- add_index(:bookings, [:user_id, :resource_id, :starts_at, :ends_at], {:unique=>true, :where=>"status = 'waitlisted'", :name=>"one_waitlist_entry"})
+   -> 0.0049s
+-- execute("ALTER TABLE bookings ADD CONSTRAINT no_active_resource_overlap\nEXCLUDE USING gist (resource_id WITH =, tstzrange(starts_at, ends_at, '[)') WITH &&)\nWHERE (status IN ('pending_approval', 'confirmed'));\n")
+   -> 0.0025s
+-- create_table(:booking_events)
+   -> 0.0071s
+-- create_table(:notifications)
+   -> 0.0067s
+-- add_index(:notifications, [:user_id, :notification_key], {:unique=>true})
+   -> 0.0015s
+-- add_index(:notifications, [:user_id, :read_at, :created_at])
+   -> 0.0016s
+== 20261101000000 CreateReserveops: migrated (0.1403s) ========================
+
+== 20261101000001 AddSessionVersion: migrating ================================
+-- add_column(:users, :session_version, :integer, {:null=>false, :default=>0})
+   -> 0.0031s
+== 20261101000001 AddSessionVersion: migrated (0.0031s) =======================
+
+2026-11-01T11:17:00.034Z pid=20992 tid=nsw INFO: Sidekiq 7.3.9 connecting to Redis with options {:size=>10, :pool_name=>"internal", :url=>"redis://127.0.0.1:56379/14"}
+Seeded 6 users, 6 resources, 5 bookings. Demo password supplied through environment.
+{"database":"reserveops_migrations_only","superuser":false,"users":6,"resources":6,"bookings":5,"exclusion":"EXCLUDE USING gist (resource_id WITH =, tstzrange(starts_at, ends_at, '[)'::text) WITH \u0026\u0026) WHERE (((status)::text = ANY ((ARRAY['pending_approval'::character varying, 'confirmed'::character varying])::text[])))","timestamp_type":"timestamp(6) with time zone"}

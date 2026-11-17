@@ -1,0 +1,1 @@
+PASS health, CSRF login, persisted catalog (17 resources), logout.

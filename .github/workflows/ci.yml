@@ -1,0 +1,92 @@
+name: ReserveOps verification
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: reserveops_owner
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U reserveops_owner -d postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7.4
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: reserveops
+      REDIS_URL: redis://127.0.0.1:6379/0
+      APP_TIMEZONE: Asia/Kolkata
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.13'
+          bundler-cache: true
+          working-directory: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Create non-superuser application role
+        run: psql -U reserveops_owner -d postgres -c 'CREATE ROLE reserveops LOGIN CREATEDB NOSUPERUSER;'
+      - name: Backend migration, regression, autoload, lint and security
+        working-directory: backend
+        env:
+          RAILS_ENV: test
+        run: |
+          bundle exec rails db:create db:migrate
+          bundle exec rspec
+          bundle exec rails zeitwerk:check
+          bundle exec rubocop
+          bundle exec brakeman --no-pager --no-threads
+      - name: Frontend quality checks
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run format:check
+          npm test
+          npm run build
+          npm audit --audit-level=moderate
+          npx playwright install --with-deps chromium
+      - name: Seed and start local demo processes
+        working-directory: backend
+        run: |
+          echo "DEMO_PASSWORD=$(openssl rand -hex 24)" >> "$GITHUB_ENV"
+          export DEMO_PASSWORD=$(tail -1 "$GITHUB_ENV" | cut -d= -f2-)
+          bundle exec rails db:create db:migrate db:seed
+          bundle exec rails server -b 127.0.0.1 -p 3000 -u webrick > log/demo-server.log 2>&1 &
+          bundle exec sidekiq -c 5 > log/demo-worker.log 2>&1 &
+          cd ../frontend
+          npm run dev > ../backend/log/demo-web.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:5173/api/v1/health; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Browser acceptance workflows
+        working-directory: frontend
+        run: npm run e2e
+      - name: Preserve failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reserveops-failure-evidence
+          path: |
+            backend/log/
+            frontend/test-results/
+            frontend/playwright-report/

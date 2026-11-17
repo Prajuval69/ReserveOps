@@ -1,0 +1,11 @@
+$ErrorActionPreference = 'Stop'
+$ReserveOpsRoot = Split-Path $PSScriptRoot -Parent
+$rubyHome = Join-Path $ReserveOpsRoot '.local/ruby/rubyinstaller-3.3.13-1-x64/bin'
+if (Test-Path $rubyHome) { $env:Path = "$rubyHome;$env:Path" }
+$pgBin = 'C:/Program Files/PostgreSQL/18/bin'
+if (Test-Path $pgBin) { $env:Path = "$pgBin;$env:Path" }
+$msysPath = Join-Path $ReserveOpsRoot '.local/msys64'
+if (Test-Path $msysPath) { $env:MSYS2_PATH = $msysPath }
+if (-not $env:PGPORT -and (Test-Path (Join-Path $ReserveOpsRoot '.local/pgdata'))) { $env:PGPORT = '55432' }
+if (-not $env:PGUSER) { $env:PGUSER = 'reserveops' }
+if (-not $env:REDIS_URL -and (Test-Path (Join-Path $ReserveOpsRoot '.local/redis'))) { $env:REDIS_URL = 'redis://127.0.0.1:56379/0' }

@@ -1,0 +1,266 @@
+
+Model and database guards
+2026-11-02T03:30:00.000Z pid=7644 tid=9ng INFO: Sidekiq 7.3.9 connecting to Redis with options {:size=>10, :pool_name=>"internal", :url=>"redis://127.0.0.1:56379/0"}
+  rejects illegal transitions, early completion, edits after start and final record changes
+  enforces interval, attendee and status checks even when Rails validations are bypassed
+
+Administration and analytics API
+  persists admin resource policies, category/location edits, manager scopes and safe blackouts
+  enforces manager scope through HTTP and hides stale or self approvals
+  computes clipped occupancy, blackout union denominator, cancellation rate and manager scope
+  filters SQL-like searches safely, paginates and protects notification ownership
+  revokes copied session cookies after logout
+
+ReserveOps API
+  requires sessions, enforces CSRF, resets login/logout and uses HttpOnly cookies
+  creates real bookings, maps conflicts to 409, protects ownership and masks availability
+HTTP CONCURRENCY PROOF: [201, 409]
+  returns one 201 and one 409 for synchronized authenticated HTTP sessions
+  throttles repeated failed logins
+
+BookingEngine
+  installs an actual PostgreSQL GiST exclusion constraint with half-open ranges
+  allows adjacent intervals and different resources but rejects overlap at the database layer
+  rolls back conflicting reschedules including events and retains the old slot
+CONCURRENCY PROOF: independent PostgreSQL PIDs=[18396, 12756], results=[:created, "BOOKING_CONFLICT"]
+  commits exactly one of two independent transactions synchronized before INSERT
+  rejects invalid time, capacity, advance window, opening hours and blackouts
+
+Approvals, FIFO and jobs
+  blocks pending slots, enforces scope/self-approval and requires rejection rationale
+  expires stale approval on API transition even when the worker is late
+  caps approval TTL at start
+  promotes FIFO once after cancellation, preserving pending policy and notifications
+  skips unavailable older intervals while promoting the oldest eligible candidate
+  does not promote inactive users or past intervals
+  keeps reminder, summary, and completion retries idempotent and ignores stale scheduled reminders
+  does not remind cancelled bookings and does not lose a committed booking when Redis is down
+  races competing promotion passes and a direct booking without double allocation
+
+Finished in 3.56 seconds (files took 2.81 seconds to load)
+25 examples, 0 failures
+
+Hold on, I am eager loading the application.
+All is good!
+Inspecting 55 files
+.......................................................
+
+55 files inspected, no offenses detected
+
+Tip: Based on detected gems, the following RuboCop extension libraries might be helpful:
+  * rubocop-rspec (https://rubygems.org/gems/rubocop-rspec)
+  * rubocop-rspec_rails (https://rubygems.org/gems/rubocop-rspec_rails)
+
+You can opt out of this message by adding the following to your config (see https://docs.rubocop.org/rubocop/plugins.html#plugin-suggestions for more options):
+  AllCops:
+    SuggestExtensions: false
+[Notice] Using Prism parser
+Loading scanner...
+Processing application in U:/projects/ReserveOps_Codex_Build_Kit/reserveops/backend
+Processing gems...
+[Notice] Detected Rails 8 application
+Processing configuration...
+[Notice] Escaping HTML by default
+Finding files...
+Parsing files...
+Detecting file types...
+Processing initializers...
+ 0/2 files processed
+ 1/2 files processed
+Processing libs...
+ 0/18 files processed
+ 1/18 files processed
+ 2/18 files processed
+ 3/18 files processed
+ 4/18 files processed
+ 5/18 files processed
+ 6/18 files processed
+ 7/18 files processed
+ 8/18 files processed
+ 9/18 files processed
+ 10/18 files processed
+ 11/18 files processed
+ 12/18 files processed
+ 13/18 files processed
+ 14/18 files processed
+ 15/18 files processed
+ 16/18 files processed
+ 17/18 files processed
+Processing routes...
+Processing templates...
+Processing data flow in templates...
+Processing models...
+ 0/10 files processed
+ 1/10 files processed
+ 2/10 files processed
+ 3/10 files processed
+ 4/10 files processed
+ 5/10 files processed
+ 6/10 files processed
+ 7/10 files processed
+ 8/10 files processed
+ 9/10 files processed
+Processing controllers...
+ 0/10 files processed
+ 1/10 files processed
+ 2/10 files processed
+ 3/10 files processed
+ 4/10 files processed
+ 5/10 files processed
+ 6/10 files processed
+ 7/10 files processed
+ 8/10 files processed
+ 9/10 files processed
+Processing data flow in controllers...
+ 0/10 controllers processed
+ 1/10 controllers processed
+ 2/10 controllers processed
+ 3/10 controllers processed
+ 4/10 controllers processed
+ 5/10 controllers processed
+ 6/10 controllers processed
+ 7/10 controllers processed
+ 8/10 controllers processed
+ 9/10 controllers processed
+Indexing call sites...
+Running checks...
+ - CheckBasicAuth
+ - CheckBasicAuthTimingAttack
+ - CheckCrossSiteScripting
+ - CheckContentTag
+ - CheckCookieSerialization
+ - CheckCreateWith
+ - CheckCSRFTokenForgeryCVE
+ - CheckDefaultRoutes
+ - CheckDeserialize
+ - CheckDetailedExceptions
+ - CheckDigestDoS
+ - CheckDynamicFinders
+ - CheckEOLRails
+ - CheckEOLRuby
+ - CheckEscapeFunction
+ - CheckEvaluation
+ - CheckExecute
+ - CheckFileAccess
+ - CheckFileDisclosure
+ - CheckFilterSkipping
+ - CheckForgerySetting
+ - CheckHeaderDoS
+ - CheckI18nXSS
+ - CheckJRubyXML
+ - CheckJSONEncoding
+ - CheckJSONEntityEscape
+ - CheckJSONParsing
+ - CheckLinkTo
+ - CheckLinkToHref
+ - CheckMailTo
+ - CheckMassAssignment
+ - CheckMimeTypeDoS
+ - CheckModelAttrAccessible
+ - CheckModelAttributes
+ - CheckModelSerialize
+ - CheckNestedAttributes
+ - CheckNestedAttributesBypass
+ - CheckNumberToCurrency
+ - CheckPageCachingCVE
+ - CheckPathname
+ - CheckPermitAttributes
+ - CheckQuoteTableName
+ - CheckRansack
+ - CheckRedirect
+ - CheckRegexDoS
+ - CheckRender
+ - CheckRenderDoS
+ - CheckRenderInline
+ - CheckResponseSplitting
+ - CheckRouteDoS
+ - CheckSafeBufferManipulation
+ - CheckSanitizeConfigCve
+ - CheckSanitizeMethods
+ - CheckSelectTag
+ - CheckSelectVulnerability
+ - CheckSend
+ - CheckSendFile
+ - CheckSessionManipulation
+ - CheckSessionSettings
+ - CheckSimpleFormat
+ - CheckSingleQuotes
+ - CheckSkipBeforeFilter
+ - CheckSprocketsPathTraversal
+ - CheckSQL
+ - CheckSQLCVEs
+ - CheckSSLVerify
+ - CheckStripTags
+ - CheckSymbolDoSCVE
+ - CheckTemplateInjection
+ - CheckTranslateBug
+ - CheckUnsafeReflection
+ - CheckUnsafeReflectionMethods
+ - CheckValidationRegex
+ - CheckVerbConfusion
+ - CheckWeakRSAKey
+ - CheckWithoutProtection
+ - CheckXMLDoS
+ - CheckYAMLParsing
+Checks finished, collecting results...
+Generating report...
+
+== Brakeman Report ==
+
+Application Path: U:/projects/ReserveOps_Codex_Build_Kit/reserveops/backend
+Rails Version: 8.1.4
+Brakeman Version: 7.1.2
+Scan Date: 2026-11-01 16:49:36 +0530
+Duration: 0.2381729 seconds
+Checks Run: BasicAuth, BasicAuthTimingAttack, CSRFTokenForgeryCVE, ContentTag, CookieSerialization, CreateWith, CrossSiteScripting, DefaultRoutes, Deserialize, DetailedExceptions, DigestDoS, DynamicFinders, EOLRails, EOLRuby, EscapeFunction, Evaluation, Execute, FileAccess, FileDisclosure, FilterSkipping, ForgerySetting, HeaderDoS, I18nXSS, JRubyXML, JSONEncoding, JSONEntityEscape, JSONParsing, LinkTo, LinkToHref, MailTo, MassAssignment, MimeTypeDoS, ModelAttrAccessible, ModelAttributes, ModelSerialize, NestedAttributes, NestedAttributesBypass, NumberToCurrency, PageCachingCVE, Pathname, PermitAttributes, QuoteTableName, Ransack, Redirect, RegexDoS, Render, RenderDoS, RenderInline, ResponseSplitting, RouteDoS, SQL, SQLCVEs, SSLVerify, SafeBufferManipulation, SanitizeConfigCve, SanitizeMethods, SelectTag, SelectVulnerability, Send, SendFile, SessionManipulation, SessionSettings, SimpleFormat, SingleQuotes, SkipBeforeFilter, SprocketsPathTraversal, StripTags, SymbolDoSCVE, TemplateInjection, TranslateBug, UnsafeReflection, UnsafeReflectionMethods, ValidationRegex, VerbConfusion, WeakRSAKey, WithoutProtection, XMLDoS, YAMLParsing
+
+== Overview ==
+
+Controllers: 10
+Models: 10
+Templates: 0
+Errors: 0
+Security Warnings: 0
+
+== Warning Types ==
+
+
+No warnings found
+
+
+> reserveops-web@1.0.0 lint
+> eslint .
+
+
+> reserveops-web@1.0.0 format:check
+> prettier --check src e2e *.js *.json index.html
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> reserveops-web@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 U:/projects/ReserveOps_Codex_Build_Kit/reserveops/frontend
+
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  16:49:41
+   Duration  7.28s (import 43%, tests 31%, environment 19%, setup 6%, transform 1%)
+
+
+> reserveops-web@1.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 4572 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.47 kB │ gzip:   0.30 kB
+dist/assets/index-DYQc3wli.css   30.29 kB │ gzip:   7.63 kB
+dist/assets/index-D40hHZ0v.js   406.71 kB │ gzip: 122.88 kB
+
+✓ built in 743ms

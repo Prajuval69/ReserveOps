@@ -1,0 +1,16 @@
+Bundle complete! 16 Gemfile dependencies, 75 gems now installed.
+Use `bundle info [gemname]` to see where a bundled gem is installed.
+1 installed gem you directly depend on is looking for funding.
+  Run `bundle fund` for details
+Database 'reserveops_development' already exists
+Database 'reserveops_test' already exists
+Seeded 6 users, 17 resources, 14 bookings. Demo password supplied through environment.
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 236 packages, and audited 237 packages in 10s
+
+48 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+Setup complete. Start API, worker and frontend using scripts/start.ps1.

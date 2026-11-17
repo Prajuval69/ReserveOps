@@ -1,0 +1,17 @@
+.local/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+backend/log/*
+!backend/log/.keep
+backend/tmp/*
+!backend/tmp/.keep
+backend/vendor/
+backend/.bundle/
+backend/config/master.key
+backend/config/credentials*.enc

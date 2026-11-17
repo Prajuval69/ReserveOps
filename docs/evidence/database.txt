@@ -1,0 +1,1 @@
+{"database":"reserveops_clean_verify","superuser":false,"users":6,"resources":6,"bookings":5,"exclusion":"EXCLUDE USING gist (resource_id WITH =, tstzrange(starts_at, ends_at, '[)'::text) WITH \u0026\u0026) WHERE (((status)::text = ANY (ARRAY[('pending_approval'::character varying)::text, ('confirmed'::character varying)::text])))","timestamp_type":"timestamp(6) with time zone"}
